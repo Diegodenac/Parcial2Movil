@@ -6,6 +6,9 @@ value class ProfilePicturePath private constructor(val value: String) {
         require(value.isNotBlank()) {
             "La ruta de la foto no puede estar vacía"
         }
+        require(value.startsWith("https://")) {
+            "La ruta debe comenzar con https://"
+        }
         require(value.endsWith(".png") || value.endsWith(".jpg") || value.endsWith(".jpeg")) {
             "La ruta debe terminar en .png, .jpg o .jpeg"
         }
