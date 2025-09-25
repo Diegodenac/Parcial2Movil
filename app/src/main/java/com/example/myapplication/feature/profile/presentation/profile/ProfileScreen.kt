@@ -30,7 +30,7 @@ fun ProfileScreen(modifier: Modifier,
         when(val st=state){
             is ProfileViewModel.ProfileStateUI.Init ->{
                 Row {
-                    Text(st.userProfile.userName)
+                    Text(st.userProfile.userName.userName)
                     AsyncImage(
                         model = st.userProfile.pathPicture,
                         contentDescription = null,
@@ -38,7 +38,7 @@ fun ProfileScreen(modifier: Modifier,
                         contentScale = ContentScale.Crop
                     )
                 }
-                Text(st.userProfile.email)
+                Text(st.userProfile.email.value)
             }
 
             is ProfileViewModel.ProfileStateUI.Error -> {
