@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "234130878991",
+    "project_id": "dollarexchange-3cabc",
+    "storage_bucket": "dollarexchange-3cabc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234130878991:android:22eecaa2dcb45ed8f4e97a",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGHbX7a5oDdaE5R8ygj5UlQeW7zsSH_dM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

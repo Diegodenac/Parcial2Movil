@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="sign_in_button"> Sign In </string>
+    <string name="sign_title"> Sign In </string>
+    <string name="password_field"> password </string>
+    <string name="password_label"> Password </string>
+    <string name="email_address_field"> email address </string>
+    <string name="email_address_label"> Email Address </string>
+    <string name="api_key"> fa3e844ce31744388e07fa47c7c5d8c3 </string>
+    <string name="sort_by"> popularity.desc </string>
+</resources>
