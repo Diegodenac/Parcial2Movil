@@ -77,4 +77,5 @@ dependencies {
     annotationProcessor(libs.room.compiler)
     ksp(libs.room.compiler)
     testImplementation(libs.room.testing)
+    testImplementation("io.mockk:mockk:1.14.5")
 }
