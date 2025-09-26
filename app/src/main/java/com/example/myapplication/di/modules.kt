@@ -14,6 +14,8 @@ import com.example.myapplication.feature.github.domain.repository.IgitHubReposit
 import com.example.myapplication.feature.github.domain.usercases.FindByNicknameUseCase
 import com.example.myapplication.feature.github.presentation.github.GithubViewModel
 import com.example.myapplication.feature.movie_pages.data.api.MoviesService
+import com.example.myapplication.feature.movie_pages.data.database.MoviesRoomDatabase
+import com.example.myapplication.feature.movie_pages.data.datasorce.MoviesLocalDataSource
 import com.example.myapplication.feature.movie_pages.data.datasorce.MoviesRemoteDataSource
 import com.example.myapplication.feature.movie_pages.data.repository.MoviesRepository
 import com.example.myapplication.feature.movie_pages.domain.repository.IMoviesRepository
@@ -67,11 +69,14 @@ val appModule = module {
 
     // DataSources
     single { GithubRemoteDataSource(get()) }
+    single { MoviesRoomDatabase.getDatabase(get()) }
+    single { get<MoviesRoomDatabase>().movieDao() }
     single { MoviesRemoteDataSource(get()) }
+    single { MoviesLocalDataSource(get()) }
 
     // Repositorios
     single<IgitHubRepository> { GitHubRepository(get()) }
-    single<IMoviesRepository> { MoviesRepository(get()) }
+    single<IMoviesRepository> { MoviesRepository(get(), get()) }
 
     // UseCases
     factory { FindByNicknameUseCase(get()) }
