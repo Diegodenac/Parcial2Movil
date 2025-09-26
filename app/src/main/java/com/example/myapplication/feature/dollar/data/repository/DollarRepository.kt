@@ -20,4 +20,8 @@ class DollarRepository(
             localDataSource.insert(it)
         }
     }
+    override suspend fun getAllFromLocal(): List<DollarModel> {
+        return localDataSource.getList()
+    }
+
 }

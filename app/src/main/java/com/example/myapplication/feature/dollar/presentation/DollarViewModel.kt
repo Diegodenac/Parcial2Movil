@@ -16,40 +16,61 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class DollarViewModel(
-    val fetchDollarUseCase: FetchDollarUseCase
-): ViewModel() {
-    sealed class DollarUIState{
-        object Loading: DollarUIState()
-        class Error(val message: String): DollarUIState()
-        class Success(val data: DollarModel): DollarUIState()
-    }
+    private val fetchDollarUseCase: FetchDollarUseCase
+) : ViewModel() {
 
-    init {
-        getDollar()
+    sealed class DollarUIState {
+        object Loading : DollarUIState()
+        class Error(val message: String) : DollarUIState()
+        class Success(val dataList: List<DollarModel>) : DollarUIState()
     }
 
     private val _state = MutableStateFlow<DollarUIState>(DollarUIState.Loading)
     val state: StateFlow<DollarUIState> = _state.asStateFlow()
 
-    fun getDollar(){
+    init {
+        observeDollarUpdates()
+    }
+
+    private fun observeDollarUpdates() {
         viewModelScope.launch(Dispatchers.IO) {
-            getToken()
-            fetchDollarUseCase.invoke().collect{
-                data -> _state.value = DollarUIState.Success(data)
+            try {
+                getToken()
+                // Escucha Firebase y cada vez que llega un cambio se guarda en Room
+                fetchDollarUseCase.invoke().collect {
+                    // Después de insertar, recarga la lista completa desde Room
+                    loadAllFromLocal()
+                }
+            } catch (e: Exception) {
+                _state.value = DollarUIState.Error(e.message ?: "Error desconocido")
             }
         }
     }
 
-    suspend fun getToken(): String = suspendCoroutine { continuation -> FirebaseMessaging.getInstance().token
-        .addOnCompleteListener { task ->
-            if(!task.isSuccessful){
-                Log.w("FIREBASE", "getInstanceId failed")
-                continuation.resumeWithException(task.exception ?: Exception("Unknown error"))
-                return@addOnCompleteListener
+    private fun loadAllFromLocal() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val list = fetchDollarUseCase.getAllFromLocal()
+                _state.value = DollarUIState.Success(list)
+            } catch (e: Exception) {
+                _state.value = DollarUIState.Error(e.message ?: "Error cargando histórico")
             }
-            val token = task.result
-            Log.d("FIREBASE", "FCM Token: $token")
-            continuation.resume(token?:"")
         }
+    }
+
+    suspend fun getToken(): String = suspendCoroutine { continuation ->
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("FIREBASE", "getInstanceId failed")
+                    continuation.resumeWithException(
+                        task.exception ?: Exception("Unknown error")
+                    )
+                    return@addOnCompleteListener
+                }
+                val token = task.result
+                Log.d("FIREBASE", "FCM Token: $token")
+                continuation.resume(token ?: "")
+            }
     }
 }

@@ -27,7 +27,7 @@ fun AppNavigation(){
         composable(Screen.LoginScreen.route){
             LoginScreen(
                 onSuccess = {
-                    navController.navigate(Screen.MovieScreen.route)
+                    navController.navigate(Screen.DollarScreen.route)
                 }
             )
         }

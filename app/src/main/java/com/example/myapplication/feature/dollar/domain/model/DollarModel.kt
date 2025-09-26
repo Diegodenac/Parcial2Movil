@@ -1,4 +1,9 @@
 package com.example.myapplication.feature.dollar.domain.model
 
-class DollarModel(val dollarOfficial: String? = null, val dollarParallel: String? = null) {
-}
+data class DollarModel(
+    val dollarOfficial: String? = null,
+    val dollarParallel: String? = null,
+    val dollarUsdt: String? = null,
+    val dollarUsdc: String? = null,
+    val timestamp: Long = 0
+)

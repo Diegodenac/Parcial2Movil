@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface IDollarRepository {
     suspend fun getDollar(): Flow<DollarModel>
+    suspend fun getAllFromLocal(): List<DollarModel>
 }
