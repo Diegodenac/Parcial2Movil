@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.firebase.database)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.webkit)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -78,4 +79,6 @@ dependencies {
     ksp(libs.room.compiler)
     testImplementation(libs.room.testing)
     testImplementation("io.mockk:mockk:1.14.5")
+
+    implementation(libs.datastore)
 }

@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.myapplication.feature.dollar.presentation.DollarScreen
 import com.example.myapplication.feature.github.presentation.github.GithubScreen
@@ -15,55 +17,68 @@ import com.example.myapplication.feature.profile.presentation.profile.ProfileScr
 import com.example.myapplication.feature.recoverpassRecuperatorio.presentation.RecoverPassScreen
 
 @Composable
-fun AppNavigation(){
-    val navController = rememberNavController()
+fun AppNavigation(navigationViewModel: NavigationViewModel, modifier: Modifier, navController: NavHostController) {
+    LaunchedEffect(Unit) {
+        navigationViewModel.navigationCommand.collect { command ->
+            when (command) {
+                is NavigationViewModel.NavigationCommand.NavigateTo -> {
+                    navController.navigate(command.route) {
+                        // Configuración del back stack según sea necesario
+                        when (command.options) {
+                            NavigationOptions.CLEAR_BACK_STACK -> {
+                                popUpTo(0) // Limpiar todo el back stack
+                            }
+
+                            NavigationOptions.REPLACE_HOME -> {
+                                popUpTo(Screen.DollarScreen.route) { inclusive = true }
+                            }
+
+                            else -> {
+                                // Navegación normal
+                            }
+                        }
+                    }
+                }
+
+                is NavigationViewModel.NavigationCommand.PopBackStack -> {
+                    navController.popBackStack()
+                }
+            }
+        }
+    }
+
 
     NavHost(
         navController = navController,
         startDestination = Screen.LoginScreen.route,
-        /*enterTransition = { EnterTransition.None},
-        exitTransition = { ExitTransition.None},*/
-    ){
+        modifier = modifier
+    ) {
+        composable(Screen.DollarScreen.route) {
+            DollarScreen()
+        }
+
+        composable(Screen.GithubScreen.route) {
+            GithubScreen(modifier = Modifier.padding())
+        }
+
+        composable(Screen.MovieScreen.route){
+            MoviesScreen(
+                modifier = Modifier.padding()
+            )
+        }
+
+        composable(Screen.ProfileScreen.route){
+            ProfileScreen(
+                modifier = Modifier.padding()
+            )
+        }
+
         composable(Screen.LoginScreen.route){
             LoginScreen(
                 onSuccess = {
-                    navController.navigate(Screen.DollarScreen.route)
+                    navController.navigate(Screen.GithubScreen.route)
                 }
             )
-        }
-        composable(Screen.GithubScreen.route){
-            Scaffold(modifier = Modifier.fillMaxSize()) {
-                    innerPadding ->
-                GithubScreen(modifier = Modifier.padding(innerPadding))
-            }
-        }
-        composable(Screen.ProfileScreen.route) {
-            Scaffold(modifier = Modifier.fillMaxSize()) {
-                    innerPadding ->
-                ProfileScreen(modifier = Modifier.padding(innerPadding))
-            }
-        }
-        composable(Screen.LoginRecuperatorioScreen.route) {
-            LoginRecuperatorioScreen(
-                onSuccess = {
-                    navController.navigate(Screen.RecoverPasswordScreen.route)
-                }
-            )
-        }
-        composable(Screen.RecoverPasswordScreen.route) {
-            Scaffold(modifier = Modifier.fillMaxSize()) {
-                    innerPadding ->
-                RecoverPassScreen(modifier = Modifier.padding(innerPadding))
-            }
-        }
-        composable(Screen.MovieScreen.route) {
-            Scaffold(modifier = Modifier.fillMaxSize()) {
-                    innerPadding ->
-                MoviesScreen(modifier = Modifier.padding(innerPadding))
-            }
-        }
-        composable(Screen.DollarScreen.route) {
-            DollarScreen()
         }
     }
 }
