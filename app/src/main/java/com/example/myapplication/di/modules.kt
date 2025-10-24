@@ -13,15 +13,25 @@ import com.example.myapplication.feature.github.data.repository.GitHubRepository
 import com.example.myapplication.feature.github.domain.repository.IgitHubRepository
 import com.example.myapplication.feature.github.domain.usercases.FindByNicknameUseCase
 import com.example.myapplication.feature.github.presentation.github.GithubViewModel
+import com.example.myapplication.feature.maintenance.data.MaintenanceDataStore
+import com.example.myapplication.feature.maintenance.data.MaintenanceRepository
+import com.example.myapplication.feature.maintenance.presentation.MaintenanceViewModel
 import com.example.myapplication.feature.movie_pages.data.api.MoviesService
 import com.example.myapplication.feature.movie_pages.data.database.MoviesRoomDatabase
 import com.example.myapplication.feature.movie_pages.data.datasorce.MoviesLocalDataSource
 import com.example.myapplication.feature.movie_pages.data.datasorce.MoviesRemoteDataSource
 import com.example.myapplication.feature.movie_pages.data.repository.MoviesRepository
+import com.example.myapplication.feature.movie_pages.data.repository.WatchLaterRepository
 import com.example.myapplication.feature.movie_pages.domain.repository.IMoviesRepository
+import com.example.myapplication.feature.movie_pages.domain.repository.IWatchLaterRepository
+import com.example.myapplication.feature.movie_pages.domain.usecases.AddToWatchLaterUseCase
 import com.example.myapplication.feature.movie_pages.domain.usecases.GetMoviesUseCase
+import com.example.myapplication.feature.movie_pages.domain.usecases.GetWatchLaterMoviesUseCase
+import com.example.myapplication.feature.movie_pages.domain.usecases.IsInWatchLaterUseCase
+import com.example.myapplication.feature.movie_pages.domain.usecases.RemoveFromWatchLaterUseCase
 import com.example.myapplication.feature.movie_pages.presentation.MoviesViewModel
 import com.example.myapplication.feature.profile.presentation.profile.ProfileViewModel
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -71,6 +81,8 @@ val appModule = module {
     single { GithubRemoteDataSource(get()) }
     single { MoviesRoomDatabase.getDatabase(get()) }
     single { get<MoviesRoomDatabase>().movieDao() }
+
+    single { get<MoviesRoomDatabase>().watchLaterDao() }
     single { MoviesRemoteDataSource(get()) }
     single { MoviesLocalDataSource(get()) }
 
@@ -78,14 +90,22 @@ val appModule = module {
     single<IgitHubRepository> { GitHubRepository(get()) }
     single<IMoviesRepository> { MoviesRepository(get(), get()) }
 
+    single<IWatchLaterRepository> { WatchLaterRepository(get()) }
+
     // UseCases
     factory { FindByNicknameUseCase(get()) }
     factory { GetMoviesUseCase(get()) }
 
+    factory { GetWatchLaterMoviesUseCase(get()) }
+    factory { AddToWatchLaterUseCase(get()) }
+    factory { RemoveFromWatchLaterUseCase(get()) }
+    factory { IsInWatchLaterUseCase(get()) }
+
     // ViewModels
     viewModel { GithubViewModel(get()) }
     viewModel { ProfileViewModel(get()) }
-    viewModel { MoviesViewModel(get()) }
+
+    viewModel { MoviesViewModel(get(), get(), get(), get(), get()) }
 
     //DOLLAR
     //DataSources
@@ -99,4 +119,12 @@ val appModule = module {
     factory { FetchDollarUseCase(get()) }
     //ViewModels
     viewModel { DollarViewModel(get()) }
+
+    // Maintenance
+    single { MaintenanceDataStore(get()) }
+    single {
+        FirebaseRemoteConfig.getInstance()
+    }
+    single { MaintenanceRepository(get(), get()) }
+    viewModel { MaintenanceViewModel(get()) }
 }

@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
@@ -39,13 +40,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.feature.github.presentation.github.GithubScreen
+import com.example.myapplication.feature.maintenance.presentation.MaintenanceOverlay
+import com.example.myapplication.feature.maintenance.presentation.MaintenanceViewModel
 import com.example.myapplication.navigation.AppNavigation
 import com.example.myapplication.navigation.NavigationDrawer
 import com.example.myapplication.navigation.NavigationViewModel
+import com.example.myapplication.navigation.Screen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -57,8 +62,12 @@ class MainActivity : ComponentActivity() {
     private var currentIntent: Intent? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
+        setTheme(R.style.Theme_MyApplication)
         currentIntent = intent
+
 
         enableEdgeToEdge()
         setContent {
@@ -122,76 +131,93 @@ fun NavigationDrawerHost(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainApp( navigationViewModel: NavigationViewModel) {
-    val navController: NavHostController = rememberNavController()
-    val navBackStackEntry by
-    navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-    val navigationDrawerItems = listOf(
-        NavigationDrawer.Profile,
-        NavigationDrawer.Dollar,
-        NavigationDrawer.Movie,
-        NavigationDrawer.Github
-    )
-    val drawerState =
-        rememberDrawerState(initialValue =
-            androidx.compose.material3.DrawerValue.Closed)
-    val coroutineScope = rememberCoroutineScope()
+    val maintenanceViewModel: MaintenanceViewModel = koinViewModel()
+    val maintenanceMode by maintenanceViewModel.maintenanceMode.collectAsState()
 
+    LaunchedEffect(maintenanceMode) {
+        Log.d("MainApp", "Maintenance mode cambió a: $maintenanceMode")
+    }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(256.dp)
-            ) {
-                Box(
-                    modifier = Modifier.width(256.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        modifier = Modifier.width(120.dp),
-                        painter = painterResource(id =
-                            R.drawable.ic_launcher_background),
-                        contentDescription = "Logo",
-                    )
-                    Image(
-                        painter = painterResource(id =
-                            R.drawable.ic_launcher_foreground),
-                        contentDescription = "Logo",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-                navigationDrawerItems.forEach { item ->
-                    val isSelected = currentDestination?.route == item.route
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = if (isSelected) item.
-                                selectedIcon else item.unselectedIcon,
-                                contentDescription = item.label
+    if(maintenanceMode){
+        MaintenanceOverlay()
+    }else{
+        val navController: NavHostController = rememberNavController()
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        val navigationDrawerItems = listOf(
+            NavigationDrawer.Profile,
+            NavigationDrawer.Dollar,
+            NavigationDrawer.Movie,
+            NavigationDrawer.Github
+        )
+        val drawerState =
+            rememberDrawerState(initialValue =
+                androidx.compose.material3.DrawerValue.Closed)
+        val coroutineScope = rememberCoroutineScope()
+        val isMovieDetail = currentDestination?.route?.startsWith(Screen.MovieScreen.route) == true
+        if (isMovieDetail) {
+            AppNavigation(
+                navController = navController,
+                navigationViewModel = navigationViewModel,
+                modifier = Modifier
+            )
+        }else{
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = {
+                    ModalDrawerSheet(
+                        modifier = Modifier.width(256.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.width(256.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                modifier = Modifier.width(120.dp),
+                                painter = painterResource(id =
+                                    R.drawable.ic_launcher_background),
+                                contentDescription = "Logo",
                             )
-                        },
-                        label = { Text(item.label) },
-                        selected = isSelected,
-                        onClick = {
-                            navController.navigate(item.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(
-                                    navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                            }
-                            coroutineScope.launch {
-                                drawerState.close()
-                            }
+                            Image(
+                                painter = painterResource(id =
+                                    R.drawable.ic_launcher_foreground),
+                                contentDescription = "Logo",
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
-                    )
+                        navigationDrawerItems.forEach { item ->
+                            val isSelected = currentDestination?.route == item.route
+                            NavigationDrawerItem(
+                                icon = {
+                                    Icon(
+                                        imageVector = if (isSelected) item.
+                                        selectedIcon else item.unselectedIcon,
+                                        contentDescription = item.label
+                                    )
+                                },
+                                label = { Text(item.label) },
+                                selected = isSelected,
+                                onClick = {
+                                    navController.navigate(item.route) {
+                                        launchSingleTop = true
+                                        restoreState = true
+                                        popUpTo(
+                                            navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                    }
+                                    coroutineScope.launch {
+                                        drawerState.close()
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
+            ) {
+                NavigationDrawerHost(coroutineScope, drawerState, navigationViewModel, navController)
             }
         }
-    ) {
-        NavigationDrawerHost(coroutineScope, drawerState, navigationViewModel, navController)
     }
 }
 
